@@ -2,25 +2,29 @@ from PIL import Image
 import numpy as np
 import argparse
 
+"""
 # gray scale level values from:
-# http://paulbourke.net/dataformats/asciiart/
+# https://www.a1k0n.net/2011/07/20/donut-math.html
 global charscale
-charscale = "@%#*+=-:. "
+charscale = " .,-~:;=!*#$@"
+"""
+
 
 def averageBrightness(image):
     """
     Given PIL Image, return average value of grayscale value
     """
-    # get image as numpy array
     im = np.array(image)
- 
-    # get shape
     w,h = im.shape
-
-    # get average
     return np.average(im.reshape(w*h))
+    
 
-def asciiOutput(inFile, outSize, letterScale):
+def asciiOutput(inFile, outSize, invert):
+    if invert:
+        charscale = " .,-~:;=!*#$@"
+    else:
+        charscale = " .,-~:;=!*#$@"[::-1]
+
 
     # open image and convert to grayscale
     image = Image.open(inFile).convert('L')
@@ -30,7 +34,7 @@ def asciiOutput(inFile, outSize, letterScale):
 
     # compute tile dimensions and no. rows
     w = W/outSize
-    h = w/letterScale
+    h = 2 * w
     rows = int(H/h)
 
     """ Debug stuff
@@ -47,8 +51,6 @@ def asciiOutput(inFile, outSize, letterScale):
     for i in range(rows):
         y1 = int(i*h)
         y2 = int((i+1)*h)
- 
-        # correct last tile
         if i == rows-1:
             y2 = H
  
@@ -60,33 +62,20 @@ def asciiOutput(inFile, outSize, letterScale):
             # crop image to tile
             x1 = int(j*w)
             x2 = int((j+1)*w)
- 
-            # correct last tile
             if j == outSize-1:
                 x2 = W
  
-            # crop image to extract tile
+            # get average brightness of tile
             img = image.crop((x1, y1, x2, y2))
- 
-            # get average luminance
             avg = int(averageBrightness(img))
  
-            # look up ascii char
-            gsval = charscale[int((avg*9)/255)]
- 
-            # append ascii char to string
+            # add ascii char to list
+            gsval = charscale[int((avg*12)/255)]
             aimg[i] += gsval
      
     # return txt image
     return aimg
 
-"""
-print(np.average([1,2,3,4,5]))
-image = 'homapage.jpeg'
-arr = asciiOutput(image, 100, 0.43)
-for row in arr:
-    print(row)
-"""
 def main():
     parser = argparse.ArgumentParser(
     description="Converts an image to an output text file containing an ASCII art approximation of the input.",
@@ -94,7 +83,7 @@ def main():
     parser.add_argument('-i', '--input', dest = 'inputImg', help = "path to the input file", required = True)
     parser.add_argument('-o', '--output', dest = 'outFile', help = "output file path for the ASCII art [default = out.txt]", required = False)
     parser.add_argument('-s', '--size', dest = 'size', help = "number of columns for output ASCII art [default = 50]", required = False)
-    parser.add_argument('-r', '--ratio', dest = 'ratio', help = "ratio of height/width of text font [default = 0.45]", required = False)
+    parser.add_argument('-v', '--invert', dest = 'invert', help = "invert brightness of ASCII output", action = 'store_true')
     parser.add_argument('-t', '--terminal', dest = 'terminal', help = "print ASCII art to terminal", action = 'store_true')
 
     args = parser.parse_args()
@@ -109,12 +98,8 @@ def main():
     if args.size:
         size = int(args.size)
 
-    ratio = 0.45
-    if args.ratio:
-        ratio = float(args.ratio)
-
     print('START...')
-    asciiImg = asciiOutput(inputImg, size, ratio)
+    asciiImg = asciiOutput(inputImg, size, args.invert)
 
     out = open(outFile, 'w')
     if (args.terminal):
@@ -134,6 +119,7 @@ if __name__ == '__main__':
 """
 TBA:
 - increase contrast
+- invert colors
 - input video
 - play ASCII video
 - port?
