@@ -3,6 +3,7 @@ import numpy as np
 import argparse
 import cv2
 import os
+import shutil
 
 """
 # gray scale level values from:
@@ -14,6 +15,11 @@ charscale = " .,-~:;=!*#$@"
 def videoConverter(inVideo, fps, outName, invert):
     # Create output directory
     outPath = "./" + outName
+
+    if os.path.isdir(outPath):
+        shutil.rmtree(outPath) #delete directory if already exists
+    
+    
     os.mkdir(outPath)
 
     # Input video
@@ -30,33 +36,21 @@ def videoConverter(inVideo, fps, outName, invert):
         color_coverted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         pil_image = Image.fromarray(color_coverted)
 
-        #asciiFrame = asciiOutput(pil_image, invert)
-        """
+        asciiFrame = asciiOutput(pil_image, invert)
+        
         outFile = outPath + '/' + str(frameCount) + '.txt'
         out = open(outFile, 'w')
         for row in asciiFrame:
             out.write(row + '\n')
         out.close()
-        """
-
-
+        
         frameCount += 1
         video.set(cv2.CAP_PROP_POS_FRAMES, frameCount * fps)
         ret, frame = video.read()
 
-    cv2.destroyAllWindows()
-    os.rmdir(outPath)
-
-    """
-    success,image = vidcap.read()
-    count = 0
-    while success:
-    cv2.imwrite(outPath + "/frame%d.jpg" % count, image)     # save frame as JPEG file      
-    success,image = vidcap.read()
-    print('Read a new frame: ', success)
-    count += 1
-    """
-
+    #cv2.destroyAllWindows()
+    #os.rmdir(outPath)
+    
     return 0
 
 def averageBrightness(image):
@@ -77,7 +71,7 @@ def asciiOutput(inFile, invert):
 
 
     # open image and convert to grayscale
-    image = Image.open(inFile).convert('L')
+    image = inFile.convert('L')
  
     # input image dimensions
     W, H = image.size[0], image.size[1]
@@ -126,7 +120,7 @@ def asciiOutput(inFile, invert):
 
 def main():
 
-    videoConverter("skeleton.mp4", 5, "skeleton", True)
+    videoConverter("skeleton.mp4", 5, "skeleton", False)
 
     parser = argparse.ArgumentParser(
     description="Converts an image to an output text file containing an ASCII art approximation of the input.",
@@ -139,7 +133,7 @@ def main():
     # Parse and process arguments
     args = parser.parse_args()
 
-    inputImg = args.inputImg
+    inputImg = Image.open(args.inputImg)
 
     outFile = 'out.txt'
     if args.outFile:
