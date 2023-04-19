@@ -1,6 +1,8 @@
 from PIL import Image
 import numpy as np
 import argparse
+import cv2
+import os
 
 """
 # gray scale level values from:
@@ -9,6 +11,53 @@ global charscale
 charscale = " .,-~:;=!*#$@"
 """
 
+def videoConverter(inVideo, fps, outName, invert):
+    # Create output directory
+    outPath = "./" + outName
+    os.mkdir(outPath)
+
+    # Input video
+    video = cv2.VideoCapture(inVideo)
+    print("FPS:", video.get(cv2.CAP_PROP_FPS))
+
+    # Iterate over frames (fps is how frequent you want frames selected)
+    frameCount = 0
+    video.set(cv2.CAP_PROP_POS_FRAMES, frameCount)
+    ret, frame = video.read()
+
+    while ret:
+
+        color_coverted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        pil_image = Image.fromarray(color_coverted)
+
+        #asciiFrame = asciiOutput(pil_image, invert)
+        """
+        outFile = outPath + '/' + str(frameCount) + '.txt'
+        out = open(outFile, 'w')
+        for row in asciiFrame:
+            out.write(row + '\n')
+        out.close()
+        """
+
+
+        frameCount += 1
+        video.set(cv2.CAP_PROP_POS_FRAMES, frameCount * fps)
+        ret, frame = video.read()
+
+    cv2.destroyAllWindows()
+    os.rmdir(outPath)
+
+    """
+    success,image = vidcap.read()
+    count = 0
+    while success:
+    cv2.imwrite(outPath + "/frame%d.jpg" % count, image)     # save frame as JPEG file      
+    success,image = vidcap.read()
+    print('Read a new frame: ', success)
+    count += 1
+    """
+
+    return 0
 
 def averageBrightness(image):
     """
@@ -19,7 +68,8 @@ def averageBrightness(image):
     return np.average(im.reshape(w*h))
     
 
-def asciiOutput(inFile, outSize, invert):
+def asciiOutput(inFile, invert):
+    outSize = 100
     if invert:
         charscale = " .,-~:;=!*#$@"
     else:
@@ -41,25 +91,23 @@ def asciiOutput(inFile, outSize, invert):
     image.show()
     print("INPUT IMAGE:\twidth: %d \theight: %d" % (W, H))
     print("OUTPUT ASCII:\tcols: %d \trows: %d" % (outSize, rows))
-    print("TIME DIMS:\t%d x %d" % (w, h))
+    print("TILE DIMS:\t%d x %d" % (w, h))
     print("__________________")
     """
 
     # ascii image is a list of character strings
     aimg = []
     # generate list of dimensions
+    aimg.append("")
     for i in range(rows):
         y1 = int(i*h)
         y2 = int((i+1)*h)
         if i == rows-1:
             y2 = H
- 
-        # append an empty string
+        
         aimg.append("")
  
         for j in range(outSize):
- 
-            # crop image to tile
             x1 = int(j*w)
             x2 = int((j+1)*w)
             if j == outSize-1:
@@ -77,15 +125,18 @@ def asciiOutput(inFile, outSize, invert):
     return aimg
 
 def main():
+
+    videoConverter("skeleton.mp4", 5, "skeleton", True)
+
     parser = argparse.ArgumentParser(
     description="Converts an image to an output text file containing an ASCII art approximation of the input.",
     epilog="usage: python3 main.py -i [input] -o [ouput] -t")
     parser.add_argument('-i', '--input', dest = 'inputImg', help = "path to the input file", required = True)
     parser.add_argument('-o', '--output', dest = 'outFile', help = "output file path for the ASCII art [default = out.txt]", required = False)
-    parser.add_argument('-s', '--size', dest = 'size', help = "number of columns for output ASCII art [default = 50]", required = False)
     parser.add_argument('-v', '--invert', dest = 'invert', help = "invert brightness of ASCII output", action = 'store_true')
     parser.add_argument('-t', '--terminal', dest = 'terminal', help = "print ASCII art to terminal", action = 'store_true')
 
+    # Parse and process arguments
     args = parser.parse_args()
 
     inputImg = args.inputImg
@@ -94,12 +145,8 @@ def main():
     if args.outFile:
         outFile = args.outFile
 
-    size = 50
-    if args.size:
-        size = int(args.size)
-
     print('START...')
-    asciiImg = asciiOutput(inputImg, size, args.invert)
+    asciiImg = asciiOutput(inputImg, args.invert)
 
     out = open(outFile, 'w')
     if (args.terminal):
@@ -119,19 +166,9 @@ if __name__ == '__main__':
 """
 TBA:
 - increase contrast
-- invert colors
+
 - input video
 - play ASCII video
 - port?
 """
-    
-    
-
-
-
-
-
-
-
-
 
