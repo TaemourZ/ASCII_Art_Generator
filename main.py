@@ -18,8 +18,6 @@ def videoConverter(inVideo, fps, outName, invert):
 
     if os.path.isdir(outPath):
         shutil.rmtree(outPath) #delete directory if already exists
-    
-    
     os.mkdir(outPath)
 
     # Input video
