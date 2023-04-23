@@ -115,22 +115,6 @@ def asciiOutput(inFile, invert):
     return aimg
 
 def main():
-
-    #videoConverter("skeleton.mp4", "skeleton", False)
-    """
-    print(asciiOutput(Image.open("sus.png"), True))
-    outStr = ''
-    for line in asciiOutput(Image.open("sus.png"), True):
-        outStr += line + '\n'
-    print(outStr)
-
-    image = Image.new('RGB', (1000, 1000))
-    draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype("Menlo-Regular.ttf", 15) 
-    draw.text((0, 0), outStr, font = font, align ="left")
-    image.show()
-    """
-
     
     parser = argparse.ArgumentParser(
     description="Converts an image or video into ASCII art.",
@@ -139,7 +123,7 @@ def main():
     parser.add_argument('-o', '--output', dest = 'outFile', help = "output file name for the ASCII art [.txt for image, .gif for video]", required = True)
     parser.add_argument('-v', '--invert', dest = 'invert', help = "invert brightness of ASCII output", action = 'store_true')
 
-    # Parse and process arguments
+    # Parse arguments
     args = parser.parse_args()
 
     if (args.inFile.endswith(".mp4")):
@@ -167,38 +151,8 @@ def main():
         print("Saved " + args.outFile + ".txt")
         print("Exiting program.\n")
         exit()
-
-
-
-
-
-
-
-
-
-    """
-    inputImg = Image.open(args.inputImg)
-
-    outFile = 'out.txt'
-    if args.outFile:
-        outFile = args.outFile
-
-    print('START...')
-    asciiImg = asciiOutput(inputImg, args.invert)
-
-    out = open(outFile, 'w')
-    if (args.terminal):
-        for row in asciiImg:
-            out.write(row + '\n')
-            print(row)
-    else:
-        for row in asciiImg:
-            out.write(row + '\n')
     
-    out.close()
-    print('...DONE')
-    """
-    
+    return 0
     
 if __name__ == '__main__':
     main()
