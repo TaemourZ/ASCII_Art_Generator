@@ -134,11 +134,10 @@ def main():
     
     parser = argparse.ArgumentParser(
     description="Converts an image or video into ASCII art.",
-    epilog="usage: python3 main.py -i [input] -o [ouput] -t")
+    epilog="usage: python3 main.py -i [input] -o [ouput] -v")
     parser.add_argument('-i', '--input', dest = 'inFile', help = "path to the input file", required = True)
-    parser.add_argument('-o', '--output', dest = 'outFile', help = "output file name for the ASCII art [.txt for image, .gif for video]")
+    parser.add_argument('-o', '--output', dest = 'outFile', help = "output file name for the ASCII art [.txt for image, .gif for video]", required = True)
     parser.add_argument('-v', '--invert', dest = 'invert', help = "invert brightness of ASCII output", action = 'store_true')
-    #parser.add_argument('-t', '--terminal', dest = 'terminal', help = "print ASCII art to terminal", action = 'store_true')
 
     # Parse and process arguments
     args = parser.parse_args()
