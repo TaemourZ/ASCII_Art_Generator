@@ -150,7 +150,7 @@ def main():
     if args.contrast:
         contrast = float(args.contrast)
 
-    if (args.inFile.endswith(".mp4")):
+    if (args.inFile.endswith(".mp4") or args.inFile.endswith(".mov")):
         # Process mp4 file
         print("Starting video conversion...")
 
