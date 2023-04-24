@@ -5,13 +5,18 @@ import cv2
 import os
 import shutil
 
-"""
 # gray scale level values from:
 # https://www.a1k0n.net/2011/07/20/donut-math.html
-global charscale
-charscale = " .,-~:;=!*#$@"
-"""
 
+
+"""
+parameters:
+    inVideo: path to input video
+    outName: name of the output file
+    invert: True to invert brightness of output. False otherwise
+
+    RETURNS: 0, and saves the output ASCII gif to device.
+"""
 def videoConverter(inVideo, outName, invert):
     frameStep = 4
     # Create output directory
@@ -61,14 +66,26 @@ def videoConverter(inVideo, outName, invert):
 
     return 0
 
+"""
+parameters:
+    image: PIL Image object
+
+    RETURNS: value of the average brightness of the input image
+"""
 def averageBrightness(image):
-    """
-    Given PIL Image, return average value of grayscale value
-    """
     im = np.array(image)
     w,h = im.shape
     return np.average(im.reshape(w*h))
-    
+
+"""
+parameters:
+    inFile: path to input file
+    invert: True to invert brightness of output. False otherwise
+    outSize: number of columns the input image will be split into, and in turn the length of one row in the ASCII output
+    scale: used to calculate the height of one cell relative to the width
+
+    RETURNS: list of strings that make up the ASCII output
+""" 
 def asciiOutput(inFile, invert, outSize, scale):
     if invert:
         charScale = " .,-~:;=!*#$@"
@@ -114,6 +131,7 @@ def asciiOutput(inFile, invert, outSize, scale):
     # return txt image
     return aimg
 
+# main
 def main():
     
     parser = argparse.ArgumentParser(
@@ -121,7 +139,7 @@ def main():
     epilog="usage: python3 main.py -i [input] -o [ouput] -v")
     parser.add_argument('-i', '--input', dest = 'inFile', help = "path to the input file", required = True)
     parser.add_argument('-o', '--output', dest = 'outFile', help = "output file name for the ASCII art [.txt for image, .gif for video]", required = True)
-    parser.add_argument('-s', '--size', dest = 'outSize', help = "size of ASCII art output [default = 100]", required = False)
+    parser.add_argument('-s', '--size', dest = 'outSize', help = "size of ASCII art output [default = 100]", required = False) # Number of columns of output. Number of rows is dependant on number of columns
     parser.add_argument('-c', '--scale', dest = 'scale', help = "ratio of height to width of text font [default = 2.5]", required = False)
     parser.add_argument('-v', '--invert', dest = 'invert', help = "invert brightness of ASCII output", action = 'store_true')
 
