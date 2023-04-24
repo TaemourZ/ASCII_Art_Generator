@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 import numpy as np
 import argparse
 import cv2
@@ -13,7 +13,7 @@ charscale = " .,-~:;=!*#$@"
 """
 
 def videoConverter(inVideo, outName, invert):
-    fps = 4
+    frameStep = 4
     # Create output directory
     outPath = "./" + outName
 
@@ -30,13 +30,13 @@ def videoConverter(inVideo, outName, invert):
     font = ImageFont.truetype("Menlo-Regular.ttf", 10) # Font for ascii output
     
     while ret:
-        percentDone = int((frameCount * fps)/video.get(cv2.CAP_PROP_FRAME_COUNT) * 100) # show how many frames left to process
+        percentDone = int((frameCount * frameStep)/video.get(cv2.CAP_PROP_FRAME_COUNT) * 100) # show how many frames left to process
         print("Processing... [" + str(percentDone) + "%]")
 
         color_coverted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # Convert cv2 image to PIL
         pil_image = Image.fromarray(color_coverted).convert('L')
 
-        asciiArray = asciiOutput(pil_image, True) # Convert frame to ascii
+        asciiArray = asciiOutput(pil_image, invert, 100, 2.5) # Convert frame to ascii
         rows = len(asciiArray)
         outStr = ''
         for line in asciiArray:
@@ -50,7 +50,7 @@ def videoConverter(inVideo, outName, invert):
 
         # Advance to next frame
         frameCount += 1
-        video.set(cv2.CAP_PROP_POS_FRAMES, frameCount * fps)
+        video.set(cv2.CAP_PROP_POS_FRAMES, frameCount * frameStep)
         ret, frame = video.read()
 
     print("Processing... [100%]")
@@ -69,21 +69,21 @@ def averageBrightness(image):
     w,h = im.shape
     return np.average(im.reshape(w*h))
     
-def asciiOutput(inFile, invert):
-    outSize = 100
+def asciiOutput(inFile, invert, outSize, scale):
     if invert:
         charScale = " .,-~:;=!*#$@"
     else:
         charScale = " .,-~:;=!*#$@"[::-1]
 
-    image = inFile
+    enhancer = ImageEnhance.Contrast(inFile) # increase contrast
+    image = enhancer.enhance(1.5)
  
     # input image dimensions
     W, H = image.size[0], image.size[1]
 
     # compute tile dimensions and no. rows
     w = W/outSize
-    h = 2.5 * w
+    h = scale * w
     rows = int(H/h)
 
     # ascii image is a list of character strings
@@ -121,6 +121,8 @@ def main():
     epilog="usage: python3 main.py -i [input] -o [ouput] -v")
     parser.add_argument('-i', '--input', dest = 'inFile', help = "path to the input file", required = True)
     parser.add_argument('-o', '--output', dest = 'outFile', help = "output file name for the ASCII art [.txt for image, .gif for video]", required = True)
+    parser.add_argument('-s', '--size', dest = 'outSize', help = "size of ASCII art output [default = 100]", required = False)
+    parser.add_argument('-c', '--scale', dest = 'scale', help = "ratio of height to width of text font [default = 2.5]", required = False)
     parser.add_argument('-v', '--invert', dest = 'invert', help = "invert brightness of ASCII output", action = 'store_true')
 
     # Parse arguments
@@ -136,11 +138,19 @@ def main():
         exit()
     
     else:
+        outSize = 100
+        if args.outSize:
+            outSize = int(args.outSize)
+        
+        scale = 2.5
+        if args.scale:
+            scale = float(args.scale)
+
         # Process image file
         print("Starting image conversion...")
 
         image = Image.open(args.inFile).convert('L')
-        asciiImg = asciiOutput(image, args.invert)
+        asciiImg = asciiOutput(image, args.invert, outSize, scale)
 
         # Write to output file
         out = open(args.outFile + ".txt", 'w')
