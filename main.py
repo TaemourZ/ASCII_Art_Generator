@@ -17,7 +17,7 @@ parameters:
 
     RETURNS: 0, and saves the output ASCII gif to device.
 """
-def videoConverter(inVideo, outName, invert):
+def videoConverter(inVideo, outName, invert, contrastFactor):
     frameStep = 4
     # Create output directory
     outPath = "./" + outName
@@ -41,7 +41,7 @@ def videoConverter(inVideo, outName, invert):
         color_coverted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # Convert cv2 image to PIL
         pil_image = Image.fromarray(color_coverted).convert('L')
 
-        asciiArray = asciiOutput(pil_image, invert, 100, 2.5) # Convert frame to ascii
+        asciiArray = asciiOutput(pil_image, invert, 100, 2.5, contrastFactor) # Convert frame to ascii
         rows = len(asciiArray)
         outStr = ''
         for line in asciiArray:
@@ -86,14 +86,14 @@ parameters:
 
     RETURNS: list of strings that make up the ASCII output
 """ 
-def asciiOutput(inFile, invert, outSize, scale):
+def asciiOutput(inFile, invert, outSize, scale, contrastFactor):
     if invert:
         charScale = " .,-~:;=!*#$@"
     else:
         charScale = " .,-~:;=!*#$@"[::-1]
 
     enhancer = ImageEnhance.Contrast(inFile) # increase contrast
-    image = enhancer.enhance(1.5)
+    image = enhancer.enhance(contrastFactor)
  
     # input image dimensions
     W, H = image.size[0], image.size[1]
@@ -139,18 +139,22 @@ def main():
     epilog="usage: python3 main.py -i [input] -o [ouput] -v")
     parser.add_argument('-i', '--input', dest = 'inFile', help = "path to the input file", required = True)
     parser.add_argument('-o', '--output', dest = 'outFile', help = "output file name for the ASCII art [.txt for image, .gif for video]", required = True)
-    parser.add_argument('-s', '--size', dest = 'outSize', help = "size of ASCII art output [default = 100]", required = False) # Number of columns of output. Number of rows is dependant on number of columns
+    parser.add_argument('-s', '--size', dest = 'outSize', help = "size of ASCII art output [default = max = 100]", required = False) # Number of columns of output. Number of rows is dependant on number of columns
     parser.add_argument('-c', '--scale', dest = 'scale', help = "ratio of height to width of text font [default = 2.5]", required = False)
+    parser.add_argument('-t', '--contrast', dest = 'contrast', help = "controls contrast of the input image. [default = 1, value must be >= 0]", required = False)
     parser.add_argument('-v', '--invert', dest = 'invert', help = "invert brightness of ASCII output", action = 'store_true')
 
     # Parse arguments
     args = parser.parse_args()
+    contrast = 1
+    if args.contrast:
+        contrast = float(args.contrast)
 
     if (args.inFile.endswith(".mp4")):
         # Process mp4 file
         print("Starting video conversion...")
 
-        videoConverter(args.inFile, args.outFile, args.invert)
+        videoConverter(args.inFile, args.outFile, args.invert, contrast)
 
         print("Exiting program.\n")
         exit()
@@ -160,6 +164,9 @@ def main():
         if args.outSize:
             outSize = int(args.outSize)
         
+        if outSize >= 100:
+            outSize = 100
+        
         scale = 2.5
         if args.scale:
             scale = float(args.scale)
@@ -168,7 +175,7 @@ def main():
         print("Starting image conversion...")
 
         image = Image.open(args.inFile).convert('L')
-        asciiImg = asciiOutput(image, args.invert, outSize, scale)
+        asciiImg = asciiOutput(image, args.invert, outSize, scale, contrast)
 
         # Write to output file
         out = open(args.outFile + ".txt", 'w')
