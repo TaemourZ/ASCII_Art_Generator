@@ -14,9 +14,7 @@ This software takes in an input image or video and converts it to ASCII Art.
 
 Example:
 
-`python3 main.py -i wooster.jpeg -o wooster_logo -v`
-
-
+`python3 ascii-converter.py -i wooster.jpeg -o wooster_logo -v`
 
 ### Tutorials used:
 https://www.geeksforgeeks.org/converting-image-ascii-image-python/
