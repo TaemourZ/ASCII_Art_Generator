@@ -20,4 +20,5 @@ To run the program, execute using `python3 ascii-converter.py -h` to generate a 
 
 ### Tutorials used:
 https://www.geeksforgeeks.org/converting-image-ascii-image-python/
+
 https://note.nkmk.me/en/python-pillow-gif/
