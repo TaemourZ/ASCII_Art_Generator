@@ -14,6 +14,8 @@ parameters:
     inVideo: path to input video
     outName: name of the output file
     invert: True to invert brightness of output. False otherwise
+    contrastFactor: used to increase and decrease contrast of image before converting
+    frameStep: controls how far apart extracted frames are from each other
 
     RETURNS: 0, and saves the output ASCII gif to device.
 """
@@ -82,6 +84,7 @@ parameters:
     invert: True to invert brightness of output. False otherwise
     outSize: number of columns the input image will be split into, and in turn the length of one row in the ASCII output
     scale: used to calculate the height of one cell relative to the width
+    contrastFactor: used to increase and decrease contrast of image before converting
 
     RETURNS: list of strings that make up the ASCII output
 """ 
